@@ -17,10 +17,14 @@
 # under the License.
 #
 
+# Starting from go 1.21 `go mod init` will generate the go line as:
+# go 1.21.4
+# which will require the go.mod at fuzz to have a matching version,
+# so use sed to get rid of the patch version.
 gopathfuzz: $(THRIFT) fuzz.go
 	$(THRIFT) -r --gen go:thrift_import=github.com/apache/thrift/lib/go/thrift$(COMPILER_EXTRAFLAG) ../../../../tutorial/tutorial.thrift
-	cd gen-go/shared && go mod init shared
-	cd gen-go/tutorial && go mod init tutorial
+	cd gen-go/shared && go mod init shared && sed 's/^go 1\.\([0-9]*\).*$$/go 1.\1/g' go.mod > go.mod.new && mv go.mod.new go.mod
+	cd gen-go/tutorial && go mod init tutorial && sed 's/^go 1\.\([0-9]*\).*$$/go 1.\1/g' go.mod > go.mod.new && mv go.mod.new go.mod
 	touch gopathfuzz
 
 check: gopathfuzz
